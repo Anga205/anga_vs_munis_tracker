@@ -1,1 +1,26 @@
 *.class
+# Logs
+ProgressViewer/logs
+ProgressViewer/*.log
+ProgressViewer/npm-debug.log*
+ProgressViewer/yarn-debug.log*
+ProgressViewer/yarn-error.log*
+ProgressViewer/pnpm-debug.log*
+ProgressViewer/lerna-debug.log*
+
+ProgressViewer/node_modules
+ProgressViewer/dist
+ProgressViewer/dist-ssr
+ProgressViewer/*.local
+ProgressViewer/*.lockb
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
