@@ -13,6 +13,7 @@ ProgressViewer/dist
 ProgressViewer/dist-ssr
 ProgressViewer/*.local
 ProgressViewer/*.lockb
+ProgressViewer/package-lock.json
 
 # Editor directories and files
 .vscode/*
