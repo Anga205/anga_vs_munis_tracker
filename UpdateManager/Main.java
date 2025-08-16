@@ -3,7 +3,7 @@ public class Main {
         String[] userNames = new String[] { "Anga205", "munish42" };
 
         LeetCodeApi api = new LeetCodeApi("https://leetcode-api-faisalshohag.vercel.app");
-        ReadingsFile readingsFile = new ReadingsFile("UpdateManager/readings.json");
+        ReadingsFile readingsFile = new ReadingsFile("ProgressViewer/public/readings.json");
 
         java.util.Map<String, java.util.List<Reading>> allReadings = readingsFile.load();
         allReadings = readingsFile.ensureKeys(allReadings, userNames);
@@ -13,8 +13,6 @@ public class Main {
         for (String name : userNames) {
             try {
                 String json = api.getUserJson(name);
-                System.out.println("--- Output for " + name + " ---");
-                System.out.println(json);
                 Integer solved = api.parseTotalSolved(json);
                 if (solved != null) {
                     allReadings.get(name.toLowerCase()).add(new Reading(solved, now));

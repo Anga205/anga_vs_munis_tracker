@@ -1,0 +1,14 @@
+[[redirects]]
+    from = "/*"
+    to = "/index.html"
+    status = 200
+
+[[redirects]]
+    from = "/anga.svg"
+    to = "/anga.svg"
+    status = 200
+
+[[redirects]]
+    from = "/readings.json"
+    to = "/readings.json"
+    status = 200
