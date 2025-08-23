@@ -15,7 +15,22 @@ public class Main {
                 String json = api.getUserJson(name);
                 Integer solved = api.parseTotalSolved(json);
                 if (solved != null) {
-                    allReadings.get(name.toLowerCase()).add(new Reading(solved, now));
+                    String key = name.toLowerCase();
+                    java.util.List<Reading> userReadings = allReadings.get(key);
+                    boolean shouldAppend = false;
+                    if (userReadings == null || userReadings.isEmpty()) {
+                        shouldAppend = true;
+                    } else {
+                        Reading last = userReadings.get(userReadings.size() - 1);
+                        shouldAppend = solved > last.solvedCount;
+                    }
+                    if (shouldAppend) {
+                        if (userReadings == null) {
+                            userReadings = new java.util.ArrayList<>();
+                            allReadings.put(key, userReadings);
+                        }
+                        userReadings.add(new Reading(solved, now));
+                    }
                 }
             } catch (Exception ex) {
                 System.out.println("Error for " + name + ": " + ex.getMessage());
