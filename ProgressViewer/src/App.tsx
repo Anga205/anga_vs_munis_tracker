@@ -61,9 +61,21 @@ function formatTs(ts: number) {
   }
 }
 
+function formatDateOnly(ts: number) {
+  try {
+    return new Date(ts * 1000).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  } catch {
+    return String(ts)
+  }
+}
+
 export default function App() {
   const { data, loading, error } = useReadings()
-  const [range, setRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all' | 'custom'>('30d')
+  const [range, setRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all' | 'custom'>('all')
   const [customFrom, setCustomFrom] = useState<string>('') // datetime-local value
   const [customTo, setCustomTo] = useState<string>('') // datetime-local value
 
@@ -107,26 +119,55 @@ export default function App() {
   const chartData = useMemo(() => {
   const anga = toXY(data.anga205).filter(p => p.x >= minTs && p.x <= maxTs)
   const munis = toXY(data.munish42).filter(p => p.x >= minTs && p.x <= maxTs)
-    return {
-      datasets: [
-        {
-          label: 'anga205',
-          data: anga,
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          tension: 0.2,
-          pointRadius: 2
-        },
-        {
-          label: 'munis',
-          data: munis,
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: 'rgba(16, 185, 129, 0.2)',
-          tension: 0.2,
-          pointRadius: 2
-        }
-      ]
+    const datasets: any[] = [
+      {
+        label: 'Angad',
+        data: anga,
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        tension: 0.2,
+        pointRadius: 2
+      },
+      {
+        label: 'Munis',
+        data: munis,
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        tension: 0.2,
+        pointRadius: 2
+      }
+    ]
+
+    // Add dotted line if there is a >1 day gap between latest points
+    const lastAnga = anga.length ? anga[anga.length - 1] : null
+    const lastMunis = munis.length ? munis[munis.length - 1] : null
+    if (lastAnga && lastMunis) {
+      const gap = Math.abs(lastAnga.x - lastMunis.x)
+      const oneDay = 24 * 60 * 60
+      if (gap > oneDay) {
+        const aheadIsAnga = lastAnga.x > lastMunis.x
+        const aheadTime = aheadIsAnga ? lastAnga.x : lastMunis.x
+        const lagPoint = aheadIsAnga ? lastMunis : lastAnga
+        const dotted = [
+          { x: lagPoint.x, y: lagPoint.y },
+          { x: aheadTime, y: lagPoint.y }
+        ]
+        const lagColor = aheadIsAnga ? 'rgb(16, 185, 129)' : 'rgb(59, 130, 246)'
+        datasets.push({
+          label: 'Gap',
+          data: dotted,
+          borderColor: lagColor,
+          backgroundColor: 'transparent',
+          borderDash: [6, 6],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0,
+          order: 3,
+        })
+      }
     }
+
+    return { datasets }
   }, [data, minTs, maxTs])
 
   const options = useMemo(() => {
@@ -150,7 +191,8 @@ export default function App() {
         },
         legend: {
           labels: {
-            color: '#e5e7eb'
+            color: '#e5e7eb',
+            filter: (legendItem: any) => legendItem.text !== 'Gap'
           }
         }
       },
@@ -159,7 +201,7 @@ export default function App() {
           type: 'linear' as const,
           title: { display: true, text: 'Time', color: '#e5e7eb' },
           ticks: {
-            callback: (val: any) => formatTs(Number(val)),
+            callback: (val: any) => formatDateOnly(Number(val)),
             color: '#9ca3af'
           },
           grid: {
