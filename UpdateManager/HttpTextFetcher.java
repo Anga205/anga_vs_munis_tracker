@@ -12,7 +12,25 @@ public class HttpTextFetcher {
         conn.setConnectTimeout(15000);
         conn.setReadTimeout(20000);
         int status = conn.getResponseCode();
-        InputStream stream = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
+        if (status != 200) {
+            // Try to read error stream for diagnostics, but do not require it
+            InputStream es = conn.getErrorStream();
+            String err = null;
+            if (es != null) {
+                try (BufferedReader er = new BufferedReader(new InputStreamReader(es))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = er.readLine()) != null) sb.append(line);
+                    err = sb.toString();
+                }
+            }
+            conn.disconnect();
+            if (err != null && !err.isEmpty()) {
+                throw new Exception("HTTP " + status + ": " + err);
+            }
+            throw new Exception("HTTP " + status);
+        }
+        InputStream stream = conn.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         StringBuilder text = new StringBuilder();
         String line;
