@@ -9,6 +9,7 @@ import {
   Title
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import GitHubButton from 'react-github-btn'
 
 ChartJS.register(LineElement, PointElement, LinearScale, Tooltip, Legend, Title)
 
@@ -270,6 +271,21 @@ export default function App() {
 
         <div className="w-full lg:max-w-[66vw] mx-auto h-80 md:h-[420px]">
           <Line data={chartData} options={options} />
+        </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-10 pointer-events-none">
+        <div className="flex items-end justify-between w-full pb-[0.3vh]">
+          <div />
+          <a className='pointer-events-auto pr-[1vh]'>
+            <GitHubButton
+              href="https://github.com/Anga205/anga_vs_munis_tracker"
+              data-color-scheme="no-preference: dark; light: dark; dark: dark;"
+              data-size="large"
+              aria-label="Star Anga205/anga_vs_munis_tracker on GitHub"
+            >
+              Source Code
+            </GitHubButton>
+          </a>
         </div>
       </div>
     </div>
