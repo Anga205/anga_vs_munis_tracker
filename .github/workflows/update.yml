@@ -1,7 +1,7 @@
 name: Ping Leetcode API for updates
 on:
     schedule:
-        - cron: '0,30 * * * *' # every 30 minutes
+      - cron: '*/10 * * * *'
     push:
         branches:
             - main

@@ -25,6 +25,7 @@ public class ReadingsFile {
         writeText(filePath, json);
     }
 
+    // Ensures that all specified keys exist in the data map
     public Map<String, List<Reading>> ensureKeys(Map<String, List<Reading>> data, String... keys) {
         if (data == null) data = new LinkedHashMap<>();
         for (String k : keys) {
@@ -33,6 +34,7 @@ public class ReadingsFile {
         return data;
     }
 
+    // Reads text content from the given file path
     private String readText(String path) {
         try {
             File f = new File(path);
@@ -48,6 +50,7 @@ public class ReadingsFile {
         }
     }
 
+    // Writes text content to the given file path
     private void writeText(String path, String content) throws Exception {
         File f = new File(path);
         File parent = f.getParentFile();
@@ -58,6 +61,7 @@ public class ReadingsFile {
         bw.close();
     }
 
+    // Parses the JSON content into a map of readings
     private Map<String, List<Reading>> parse(String json) {
         Map<String, List<Reading>> map = new LinkedHashMap<>();
         if (json == null) return map;
@@ -95,6 +99,7 @@ public class ReadingsFile {
             String inner = json.substring(arrStart + 1, arrEnd);
             List<Reading> list = new ArrayList<>();
             int j = 0; int n = inner.length();
+            // Read pairs of [solved, timestamp]
             while (j < n) {
                 while (j < n && Character.isWhitespace(inner.charAt(j))) j++;
                 if (j < n && inner.charAt(j) == ',') { j++; continue; }
@@ -122,6 +127,7 @@ public class ReadingsFile {
         return map;
     }
 
+    // Finds the matching closing bracket for the opening bracket at startIdx
     private int findMatchingBracket(String s, int startIdx) {
         int depth = 0;
         for (int i = startIdx; i < s.length(); i++) {
@@ -135,6 +141,7 @@ public class ReadingsFile {
         return -1;
     }
 
+    // Converts the map of readings into pretty JSON format
     private String toPrettyJson(Map<String, List<Reading>> map) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");

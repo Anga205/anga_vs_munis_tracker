@@ -77,8 +77,8 @@ function formatDateOnly(ts: number) {
 export default function App() {
   const { data, loading, error } = useReadings()
   const [range, setRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all' | 'custom'>('all')
-  const [customFrom, setCustomFrom] = useState<string>('') // datetime-local value
-  const [customTo, setCustomTo] = useState<string>('') // datetime-local value
+  const [customFrom, setCustomFrom] = useState<string>('')
+  const [customTo, setCustomTo] = useState<string>('')
 
   const nowSecs = Math.floor(Date.now() / 1000)
   const rangeToSeconds: Record<'7d' | '30d' | '90d' | '1y' | 'all', number | 'all'> = {
@@ -100,13 +100,11 @@ export default function App() {
     if (range === 'custom') {
       const from = parseLocalDateTimeToSeconds(customFrom)
       const to = parseLocalDateTimeToSeconds(customTo)
-      // If both provided, normalize order; if one missing, treat as unbounded on that side
       let lo = -Infinity
       let hi = Infinity
       if (from != null) lo = from
       if (to != null) hi = to
       if (from != null && to != null && from > to) {
-        // swap to keep it sane
         lo = to
         hi = from
       }
@@ -118,8 +116,8 @@ export default function App() {
   }, [range, customFrom, customTo, nowSecs])
 
   const chartData = useMemo(() => {
-  const anga = toXY(data.anga205).filter(p => p.x >= minTs && p.x <= maxTs)
-  const munis = toXY(data.munish42).filter(p => p.x >= minTs && p.x <= maxTs)
+    const anga = toXY(data.anga205).filter(p => p.x >= minTs && p.x <= maxTs)
+    const munis = toXY(data.munish42).filter(p => p.x >= minTs && p.x <= maxTs)
     const datasets: any[] = [
       {
         label: 'Angad',
@@ -139,7 +137,6 @@ export default function App() {
       }
     ]
 
-    // Add dotted line if there is a >1 day gap between latest points
     const lastAnga = anga.length ? anga[anga.length - 1] : null
     const lastMunis = munis.length ? munis[munis.length - 1] : null
     if (lastAnga && lastMunis) {
@@ -171,7 +168,33 @@ export default function App() {
     return { datasets }
   }, [data, minTs, maxTs])
 
+  const xDomain = useMemo(() => {
+    const anga = toXY(data.anga205).filter(p => p.x >= minTs && p.x <= maxTs)
+    const munis = toXY(data.munish42).filter(p => p.x >= minTs && p.x <= maxTs)
+    const xs: number[] = []
+    for (const p of anga) xs.push(p.x)
+    for (const p of munis) xs.push(p.x)
+    if (xs.length === 0) return { min: undefined as number | undefined, max: undefined as number | undefined }
+    let min = xs[0]
+    let max = xs[0]
+    for (let i = 1; i < xs.length; i++) {
+      if (xs[i] < min) min = xs[i]
+      if (xs[i] > max) max = xs[i]
+    }
+    return { min, max }
+  }, [data, minTs, maxTs])
+
   const options = useMemo(() => {
+    const min = xDomain.min
+    const max = xDomain.max
+    let paddedMin = min
+    let paddedMax = max
+    if (min !== undefined && max !== undefined) {
+      const span = max - min
+      const pad = span * 0.03
+      paddedMin = min - pad
+      paddedMax = max + pad
+    }
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -201,6 +224,11 @@ export default function App() {
         x: {
           type: 'linear' as const,
           title: { display: true, text: 'Time', color: '#e5e7eb' },
+          bounds: 'ticks' as const,
+          offset: false,
+          grace: 0,
+          min: paddedMin,
+          max: paddedMax,
           ticks: {
             callback: (val: any) => formatDateOnly(Number(val)),
             color: '#9ca3af'
@@ -219,14 +247,14 @@ export default function App() {
         }
       }
     }
-  }, [])
+  }, [xDomain])
 
   if (loading) return <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4">Loading…</div>
   if (error) return <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4">Error: {error}</div>
 
   return (
     <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4">
-  <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-xl font-semibold">Angad vs Munis</h1>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">

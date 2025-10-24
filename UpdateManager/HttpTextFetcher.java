@@ -5,9 +5,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class HttpTextFetcher {
+    // Fetches text content from the given URL
     public static String fetchText(String urlText) throws Exception {
         URL url = new URL(urlText);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        // Set timeouts and method
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(15000);
         conn.setReadTimeout(20000);
@@ -16,6 +18,7 @@ public class HttpTextFetcher {
             // Try to read error stream for diagnostics, but do not require it
             InputStream es = conn.getErrorStream();
             String err = null;
+            // Try to read error stream for diagnostics
             if (es != null) {
                 try (BufferedReader er = new BufferedReader(new InputStreamReader(es))) {
                     StringBuilder sb = new StringBuilder();
@@ -24,6 +27,7 @@ public class HttpTextFetcher {
                     err = sb.toString();
                 }
             }
+            // Log error details
             conn.disconnect();
             if (err != null && !err.isEmpty()) {
                 throw new Exception("HTTP " + status + ": " + err);
